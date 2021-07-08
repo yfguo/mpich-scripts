@@ -1,0 +1,3 @@
+#!/bin/zsh
+
+mpiexec -prepend-pattern='[%r] (%t s) ' $@
