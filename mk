@@ -27,7 +27,7 @@ PROJECT_DIR=$(get_project_dir ${PWD})
 cd $PROJECT_DIR
 
 if [[ ! -e "$PROJECT_DIR/compile_commands.json" ]]; then
-    bear --make $MAKE_ARGS
+    bear -- make $MAKE_ARGS
 else
     if [[ "$clean" == "yes" ]]; then
         rm $PROJECT_DIR/compile_commands.json
