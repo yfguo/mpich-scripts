@@ -47,7 +47,7 @@ make install
 
 if [[  ! -d $PREREQ_BASE/libfabric ]]; then
     git clone https://github.com/ofiwg/libfabric $PREREQ_BASE/libfabric
-    cd libfabric
+    cd $PREREQ_BASE/libfabric
     git checkout -b stable v1.11.2
 fi
 
@@ -59,7 +59,7 @@ make install
 
 if [[ ! -d $PREREQ_BASE/ucx ]]; then
     git clone https://github.com/openucx/ucx $PREREQ_BASE/ucx
-    cd libfabric
+    cd $PREREQ_BASE/ucx
     git checkout -b stable v1.10.1
 fi
 
