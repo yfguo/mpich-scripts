@@ -8,31 +8,37 @@ if [[ ! -d $PREREQ_BASE ]]; then
     mkdir -p $PREREQ_BASE
 fi
 
-cd $PREREQ_BASE
-if [[ ! -d $PREREQ_BASE/mpich-main ]]; then
-    git clone https://github.com/pmodels/mpich --recursive mpich-main
-fi
-cd $PREREQ_BASE/mpich-main
-git fetch --all
-git reset --hard origin/main
-git submodule update --init --recursive
+function code() {
+    cd $PREREQ_BASE
+    if [[ ! -d $PREREQ_BASE/mpich-main ]]; then
+        git clone https://github.com/pmodels/mpich --recursive mpich-main
+    fi
+    cd $PREREQ_BASE/mpich-main
+    git fetch --all
+    git reset --hard origin/main
+    git submodule update --init --recursive
 
-# prepare
-./autogen.sh
+    # prepare
+    ./autogen.sh
+}
 
 # Start building each submodule separately
 
 INSTALL_BASE_PATH=$HOME/.local/mpich-prereq
 
-cd $PREREQ_BASE/mpich-main/modules/hwloc
-./configure --prefix=$INSTALL_BASE_PATH/hwloc
-make -j
-make install
+function hwloc() {
+    cd $PREREQ_BASE/mpich-main/modules/hwloc
+    ./configure --prefix=$INSTALL_BASE_PATH/hwloc
+    make -j
+    make install
+}
 
-cd $PREREQ_BASE/mpich-main/modules/izem
-./configure --prefix=$INSTALL_BASE_PATH/izem
-make -j
-make install
+function izem() {
+    cd $PREREQ_BASE/mpich-main/modules/izem
+    ./configure --prefix=$INSTALL_BASE_PATH/izem
+    make -j
+    make install
+}
 
 # cd $PREREQ_BASE/mpich-main/modules/json-c
 # ./configure --prefix=$INSTALL_BASE_PATH/json-c --disable-werror
@@ -40,33 +46,71 @@ make install
 # make install
 # cd ..
 
-cd $PREREQ_BASE/mpich-main/modules/yaksa
-./configure --prefix=$INSTALL_BASE_PATH/yaksa
-make -j 16
-make install
+function yaksa() {
+    cd $PREREQ_BASE/mpich-main/modules/yaksa
+    ./configure --prefix=$INSTALL_BASE_PATH/yaksa
+    make -j 16
+    make install
+}
 
-if [[  ! -d $PREREQ_BASE/libfabric ]]; then
-    git clone https://github.com/ofiwg/libfabric $PREREQ_BASE/libfabric
+function libfabric() {
+    if [[  ! -d $PREREQ_BASE/libfabric ]]; then
+        git clone https://github.com/ofiwg/libfabric $PREREQ_BASE/libfabric
+        cd $PREREQ_BASE/libfabric
+        git checkout -b stable v1.11.2
+    fi
+
     cd $PREREQ_BASE/libfabric
-    git checkout -b stable v1.11.2
-fi
+    ./autogen.sh
+    ./configure --prefix=$INSTALL_BASE_PATH/libfabric
+    make -j
+    make install
+}
 
-cd $PREREQ_BASE/libfabric
-./autogen.sh
-./configure --prefix=$INSTALL_BASE_PATH/libfabric
-make -j
-make install
+function ucx() {
+    if [[ ! -d $PREREQ_BASE/ucx ]]; then
+        git clone https://github.com/openucx/ucx $PREREQ_BASE/ucx
+        cd $PREREQ_BASE/ucx
+        git checkout -b stable v1.10.1
+    fi
 
-if [[ ! -d $PREREQ_BASE/ucx ]]; then
-    git clone https://github.com/openucx/ucx $PREREQ_BASE/ucx
     cd $PREREQ_BASE/ucx
-    git checkout -b stable v1.10.1
-fi
+    ./autogen.sh
+    ./configure --prefix=$INSTALL_BASE_PATH/ucx --disable-examples --disable-gtest
+    make -j
+    make install
+}
 
-cd $PREREQ_BASE/ucx
-./autogen.sh
-./configure --prefix=$INSTALL_BASE_PATH/ucx --disable-examples --disable-gtest
-make -j
-make install
+case $1 in
+    "code" )
+        code
+        ;;
+    "hwloc" )
+        hwloc
+        ;;
+    "izem" )
+        izem
+        ;;
+    "yaksa" )
+        yaksa
+        ;;
+    "libfabric" )
+        libfabric
+        ;;
+    "ucx" )
+        ucx
+        ;;
+    "all" )
+        code
+        hwloc
+        izem
+        yaksa
+        libfabric
+        ucx
+        ;;
+    * )
+        echo "./mpich-prereq-update <module>"
+        ;;
+esac
 
 cd $CURRENT_PWD

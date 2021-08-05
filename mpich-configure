@@ -1,9 +1,21 @@
 #!/bin/sh
 
-./configure --with-pm=no \
-    --with-hwloc=$LR/mpich-prereq/hwloc --with-izem=$LR/mpich-prereq/izem \
-    --with-yaksa=$LR/mpich-prereq/yaksa \
-    --with-libfabric=$LR/mpich-prereq/libfabric --with-ucx=$LR/mpich-prereq/ucx \
-    --disable-fortran --enable-g=dbg,log \
-    --enable-ch4-netmod-inline=no \
-    $@
+case $@ in
+    *--with-ucx* )
+        ./configure --with-pm=no \
+            --with-hwloc=$LR/mpich-prereq/hwloc --with-izem=$LR/mpich-prereq/izem \
+            --with-yaksa=$LR/mpich-prereq/yaksa \
+            --disable-fortran --enable-g=dbg,log \
+            --enable-ch4-netmod-inline=no \
+            $@
+        ;;
+    *)
+        ./configure --with-pm=no \
+            --with-hwloc=$LR/mpich-prereq/hwloc --with-izem=$LR/mpich-prereq/izem \
+            --with-yaksa=$LR/mpich-prereq/yaksa \
+            --with-libfabric=$LR/mpich-prereq/libfabric --with-ucx=$LR/mpich-prereq/ucx \
+            --disable-fortran --enable-g=dbg,log \
+            --enable-ch4-netmod-inline=no \
+            $@
+        ;;
+esac
